@@ -1,9 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-
-gsap.registerPlugin(ScrollTrigger)
 
 const LAYERS = [
   {
@@ -64,50 +60,8 @@ function LayerCard({ layer, index }) {
 }
 
 export default function RoutingLayers() {
-  const sectionRef = useRef(null)
-  const wrapperRef = useRef(null)
-  const lineRef = useRef(null)
-  const svgRef = useRef(null)
-  const [svgHeight, setSvgHeight] = useState(0)
-
-  useEffect(() => {
-    const updateHeight = () => {
-      if (wrapperRef.current) {
-        setSvgHeight(wrapperRef.current.offsetHeight)
-      }
-    }
-    updateHeight()
-    const ro = new ResizeObserver(updateHeight)
-    if (wrapperRef.current) ro.observe(wrapperRef.current)
-    return () => ro.disconnect()
-  }, [])
-
-  useEffect(() => {
-    if (!lineRef.current || !svgRef.current || svgHeight === 0) return
-
-    const totalLength = svgHeight
-    gsap.set(lineRef.current, {
-      strokeDasharray: totalLength,
-      strokeDashoffset: totalLength,
-    })
-
-    const trigger = ScrollTrigger.create({
-      trigger: wrapperRef.current,
-      start: 'top 80%',
-      end: 'bottom 20%',
-      scrub: 1,
-      onUpdate: (self) => {
-        gsap.set(lineRef.current, {
-          strokeDashoffset: totalLength * (1 - self.progress),
-        })
-      },
-    })
-
-    return () => trigger.kill()
-  }, [svgHeight])
-
   return (
-    <section ref={sectionRef} className="routing-infrastructure container">
+    <section className="routing-infrastructure container">
       <div className="section-header">
         <div className="pill-tag">
           <span className="pill-dot" />
@@ -120,44 +74,10 @@ export default function RoutingLayers() {
         </p>
       </div>
 
-      <div ref={wrapperRef} style={{ position: 'relative' }}>
-        {/* SVG vertical connector line behind cards */}
-        {svgHeight > 0 && (
-          <svg
-            ref={svgRef}
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              left: '50%',
-              top: 0,
-              transform: 'translateX(-50%)',
-              width: '2px',
-              height: svgHeight,
-              pointerEvents: 'none',
-              zIndex: 0,
-              overflow: 'visible',
-            }}
-          >
-            <line
-              ref={lineRef}
-              x1="1"
-              y1="0"
-              x2="1"
-              y2={svgHeight}
-              stroke="var(--neon-primary)"
-              strokeWidth="1"
-              strokeDasharray={`6 8`}
-              strokeDashoffset={svgHeight}
-              strokeLinecap="round"
-            />
-          </svg>
-        )}
-
-        <div className="processing-layers" style={{ position: 'relative', zIndex: 1 }}>
-          {LAYERS.map((layer, i) => (
-            <LayerCard key={i} layer={layer} index={i} />
-          ))}
-        </div>
+      <div className="processing-layers">
+        {LAYERS.map((layer, i) => (
+          <LayerCard key={i} layer={layer} index={i} />
+        ))}
       </div>
     </section>
   )
